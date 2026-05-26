@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biscuit Portal Broadcast Builder</title>
+  <style>
+    :root {
+      --panel: rgba(5, 2, 15, 0.94);
+      --purple: #9b63ff;
+      --purple-bright: #c6a4ff;
+      --muted: #8d6bd1;
+      --text: #efe7ff;
+      --danger: #ff6bd6;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(112, 43, 255, 0.22), transparent 36%),
+        radial-gradient(circle at 50% 100%, rgba(70, 22, 180, 0.18), transparent 42%),
+        linear-gradient(180deg, #030109 0%, #000000 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.035) 0px,
+          rgba(255, 255, 255, 0.035) 1px,
+          transparent 2px,
+          transparent 6px
+        );
+      opacity: 0.16;
+      mix-blend-mode: screen;
+    }
+
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 560px;
+      padding: 30px 22px 24px;
+      border: 2px solid var(--purple);
+      border-radius: 26px;
+      background:
+        linear-gradient(180deg, rgba(10, 4, 28, 0.97), rgba(1, 0, 5, 0.99)),
+        var(--panel);
+      box-shadow:
+        0 0 18px rgba(155, 99, 255, 0.72),
+        0 0 62px rgba(81, 26, 196, 0.48),
+        inset 0 0 26px rgba(155, 99, 255, 0.13);
+      position: relative;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(155, 99, 255, 0.35);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    .content { position: relative; z-index: 2; }
+
+    .status {
+      margin: 8px 6px 20px;
+      color: var(--purple-bright);
+      font-size: 13px;
+      letter-spacing: 0.42em;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(155, 99, 255, 0.9);
+    }
+
+    h1 {
+      margin: 0 6px 16px;
+      color: #050208;
+      font-size: clamp(34px, 9vw, 54px);
+      line-height: 0.96;
+      letter-spacing: 0.08em;
+      font-weight: 900;
+      text-transform: uppercase;
+      -webkit-text-stroke: 1px rgba(198, 164, 255, 0.95);
+      text-shadow:
+        0 0 4px rgba(198, 164, 255, 0.95),
+        0 0 14px rgba(155, 99, 255, 0.92),
+        0 0 26px rgba(155, 99, 255, 0.78);
+    }
+
+    .explain {
+      margin: 0 6px 24px;
+      color: var(--purple-bright);
+      font-size: 16px;
+      line-height: 1.45;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(155, 99, 255, 0.48);
+    }
+
+    label {
+      display: block;
+      margin: 18px 6px 9px;
+      color: var(--purple-bright);
+      font-size: 13px;
+      letter-spacing: 0.34em;
+      font-weight: 900;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(155, 99, 255, 0.7);
+    }
+
+    textarea,
+    input[type="text"] {
+      width: 100%;
+      border: 2px solid rgba(198, 164, 255, 0.86);
+      border-radius: 18px;
+      padding: 18px;
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.54);
+      box-shadow:
+        0 0 16px rgba(155, 99, 255, 0.48),
+        inset 0 0 22px rgba(155, 99, 255, 0.1);
+      font-size: 17px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .button {
+      width: 100%;
+      border: 2px solid var(--purple-bright);
+      border-radius: 18px;
+      padding: 20px 16px;
+      margin-top: 24px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(198, 164, 255, 0.42), transparent 60%),
+        linear-gradient(180deg, rgba(116, 49, 255, 0.8), rgba(44, 10, 130, 0.86));
+      box-shadow:
+        0 0 16px rgba(198, 164, 255, 0.92),
+        0 0 38px rgba(155, 99, 255, 0.76),
+        inset 0 0 22px rgba(255, 255, 255, 0.12);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .ghost {
+      background: rgba(0, 0, 0, 0.62);
+      color: var(--purple-bright);
+      box-shadow:
+        0 0 12px rgba(155, 99, 255, 0.5),
+        inset 0 0 14px rgba(155, 99, 255, 0.08);
+      margin-top: 14px;
+    }
+
+    .result {
+      display: none;
+      margin-top: 22px;
+      padding: 18px;
+      border: 1px solid rgba(198, 164, 255, 0.72);
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.54);
+      box-shadow:
+        0 0 14px rgba(155, 99, 255, 0.38),
+        inset 0 0 16px rgba(155, 99, 255, 0.08);
+    }
+
+    .result h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--purple-bright);
+      text-shadow: 0 0 10px rgba(155, 99, 255, 0.75);
+    }
+
+    .result p, .result li {
+      color: var(--text);
+      line-height: 1.45;
+      font-size: 15px;
+    }
+
+    .result ol {
+      margin: 8px 0 0 20px;
+      padding: 0;
+    }
+
+    .warning {
+      display: none;
+      margin-top: 16px;
+      color: var(--danger);
+      font-size: 14px;
+      line-height: 1.4;
+      text-shadow: 0 0 8px rgba(255, 107, 214, 0.55);
+    }
+
+    .signature {
+      margin: 26px 8px 0;
+      color: rgba(198, 164, 255, 0.78);
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(155, 99, 255, 0.75);
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="panel" aria-label="Biscuit Portal Broadcast Builder">
+      <div class="content">
+        <div class="status">Builder Active</div>
+
+        <h1>Biscuit Portal<br>Broadcast<br>Builder</h1>
+
+        <p class="explain">
+          Type your message. This creates one HTML portal that broadcasts it on the captive portal page.
+        </p>
+
+        <label for="broadcastTitle">Broadcast Title</label>
+        <input id="broadcastTitle" type="text" value="Biscuit Portal Broadcast" />
+
+        <label for="broadcastMessage">Message To Broadcast</label>
+        <textarea id="broadcastMessage" placeholder="Type your broadcast message here..."></textarea>
+
+        <button class="button" onclick="buildPortal()">Submit</button>
+
+        <div id="warning" class="warning"></div>
+
+        <div id="result" class="result">
+          <h2>Broadcast Portal Ready</h2>
+          <p>Your single HTML broadcast portal has been created.</p>
+          <ol>
+            <li>Download the generated HTML file.</li>
+            <li>Upload that HTML file to your Biscuit portal.</li>
+            <li>Connect a phone to the Biscuit WiFi.</li>
+            <li>Open the captive portal and your message will display.</li>
+          </ol>
+          <button class="button ghost" onclick="downloadGeneratedPortal()">Download HTML Portal</button>
+        </div>
+
+        <div class="signature">Safety is an illusion</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let generatedPortal = "";
+    let generatedFileName = "biscuit-broadcast-portal.html";
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function cleanFileName(name) {
+      return String(name || "broadcast")
+        .replace(/[\\/:*?"<>|]+/g, "_")
+        .replace(/\s+/g, "-")
+        .trim() || "broadcast";
+    }
+
+    function showWarning(message) {
+      const warning = document.getElementById("warning");
+      warning.textContent = message;
+      warning.style.display = "block";
+    }
+
+    function clearWarning() {
+      const warning = document.getElementById("warning");
+      warning.textContent = "";
+      warning.style.display = "none";
+    }
+
+    function buildPortal() {
+      clearWarning();
+
+      const title = document.getElementById("broadcastTitle").value.trim() || "Biscuit Portal Broadcast";
+      const message = document.getElementById("broadcastMessage").value.trim();
+
+      if (!message) {
+        showWarning("Type a broadcast message first.");
+        return;
+      }
+
+      generatedFileName = "biscuit-broadcast-" + cleanFileName(title).toLowerCase() + ".html";
+      generatedPortal = createPortalHtml(title, message);
+
+      document.getElementById("result").style.display = "block";
+    }
+
+    function createPortalHtml(title, message) {
+      const safeTitle = escapeHtml(title);
+      const safeMessage = escapeHtml(message).replaceAll("\n", "<br>");
+
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${safeTitle}</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(112, 43, 255, 0.24), transparent 36%),
+        radial-gradient(circle at 50% 100%, rgba(70, 22, 180, 0.18), transparent 42%),
+        linear-gradient(180deg, #030109 0%, #000 100%);
+      color: #efe7ff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body:before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(to bottom, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 2px, transparent 6px);
+      opacity: .16;
+    }
+
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+    }
+
+    .portal {
+      width: 100%;
+      max-width: 620px;
+      padding: 30px 22px 22px;
+      border: 2px solid #9b63ff;
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgba(10,4,28,.97), rgba(1,0,5,.99));
+      box-shadow: 0 0 18px rgba(155,99,255,.72), 0 0 62px rgba(81,26,196,.48), inset 0 0 26px rgba(155,99,255,.13);
+      position: relative;
+    }
+
+    .portal:after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(155, 99, 255, 0.35);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    .content { position: relative; z-index: 2; }
+
+    .status {
+      margin: 8px 6px 20px;
+      color: #c6a4ff;
+      font-size: 13px;
+      letter-spacing: .42em;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(155,99,255,.9);
+    }
+
+    h1 {
+      margin: 0 6px 24px;
+      color: #efe7ff;
+      font-size: clamp(32px, 8vw, 54px);
+      line-height: 1.02;
+      letter-spacing: .08em;
+      font-weight: 900;
+      text-transform: uppercase;
+      overflow-wrap: anywhere;
+      text-shadow: 0 0 8px rgba(198,164,255,.95), 0 0 26px rgba(155,99,255,.84);
+    }
+
+    .message-box {
+      width: 100%;
+      border: 2px solid #c6a4ff;
+      border-radius: 20px;
+      padding: 22px;
+      background: rgba(0,0,0,.42);
+      box-shadow: 0 0 16px rgba(198,164,255,.32), inset 0 0 18px rgba(155,99,255,.08);
+      color: #efe7ff;
+      font-size: clamp(20px, 5vw, 32px);
+      line-height: 1.45;
+      letter-spacing: .04em;
+      text-shadow: 0 0 8px rgba(198,164,255,.5);
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    .small {
+      margin: 18px 8px 6px;
+      color: #8d6bd1;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .signature {
+      margin: 22px 8px 0;
+      color: rgba(198,164,255,.78);
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: .34em;
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(155,99,255,.75);
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="portal">
+      <div class="content">
+        <div class="status">Broadcast Active</div>
+        <h1>${safeTitle}</h1>
+        <div class="message-box">${safeMessage}</div>
+        <p class="small">Local captive portal broadcast</p>
+        <div class="signature">Safety is an illusion</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>`;
+    }
+
+    function downloadGeneratedPortal() {
+      if (!generatedPortal) {
+        showWarning("Build the portal first.");
+        return;
+      }
+
+      const blob = new Blob([generatedPortal], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = generatedFileName;
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(function () {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
+  </script>
+</body>
+</html>
